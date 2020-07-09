@@ -1,0 +1,25 @@
+sudo: required
+
+services:
+    - docker
+
+before_install:
+    - docker build -t satishgh12/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run satishgh/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t satishgh12/multiclient ./client
+    - docker build -t satishgh12/multinginx ./nginx
+    - docker build -t satishgh12/multiserver ./server
+    - docker build -t satishgh12/multiworker ./worker
+
+# Login to the docker CLI
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+# Take images and push to docker hub
+    - docker push satishgh12/multiclient 
+    - docker push satishgh12/multinginx
+    - docker push satishgh12/multiserver
+    - docker push satishgh12/multiworker
